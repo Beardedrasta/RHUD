@@ -1,2 +1,2 @@
-# Example
-An example greeter plugin
+# Rasta XP
+A simple Experience bar tracker for current skill training.
