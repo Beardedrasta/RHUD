@@ -65,14 +65,14 @@ public class RastaXPPlugin extends Plugin
 	private final Map<Skill, Integer> skillList = new EnumMap<>(Skill.class);
 
 	@Override
-	protected void startUp() throws Exception
+	protected void startUp()
 	{
 		overlayManager.add(overlay);
 		barsDisplayed = true;
 	}
 
 	@Override
-	protected void shutDown() throws Exception
+	protected void shutDown()
 	{
 		overlayManager.remove(overlay);
 		barsDisplayed = false;
@@ -102,8 +102,8 @@ public class RastaXPPlugin extends Plugin
 class XPBarOverlay extends Overlay {
 
 	private static final int IMAGE_SIZE = 15;
-	private RastaXPConfig config;
-	private Client client;
+	private final RastaXPConfig config;
+	private final Client client;
 	private static final Logger logger = LoggerFactory.getLogger(XPBarOverlay.class);
 	private static final Color BACKGROUND = new Color(0, 0, 0, 120);
 	private static final int WIDTH = 512;
@@ -117,7 +117,6 @@ class XPBarOverlay extends Overlay {
 	private static final int PADDING = 1;
 	private static final int ICON_AND_COUNTER_OFFSET_X = 1;
 	private static final int ICON_AND_COUNTER_OFFSET_Y = 21;
-	private static final int SKILL_ICON_HEIGHT = 35;
 	private static final int COUNTER_ICON_HEIGHT = 18;
 	private int currentXP;
 	private int currentLevel;
@@ -172,9 +171,9 @@ class XPBarOverlay extends Overlay {
 
 		final int height, offsetBarX, offsetBarY;
 
-		height = HEIGHT;
-		offsetBarX = (-1);
-		offsetBarY = (1);
+		//height = HEIGHT;
+		//offsetBarX = (-1);
+		//offsetBarY = (1);
 		return null;
 	}
 
@@ -185,7 +184,7 @@ class XPBarOverlay extends Overlay {
 		currentLevel = Experience.getLevelForXp(currentXP);
 		nextLevelXP = Experience.getXpForLevel(currentLevel + 1);
 		int currentLevelXP = Experience.getXpForLevel(currentLevel);
-		boolean isTransparentChatbox = client.getVar(Varbits.TRANSPARENT_CHATBOX) == 1;
+		boolean isTransparentChatbox = client.getVarbitValue(Varbits.TRANSPARENT_CHATBOX) == 1;
 
 		//Calc starting position for bar
 		int adjustedX = x + 4;
@@ -220,7 +219,7 @@ class XPBarOverlay extends Overlay {
 		int currentPray = client.getBoostedSkillLevel(Skill.PRAYER);
 		int maxPray = client.getRealSkillLevel(Skill.PRAYER);
 
-		boolean isTransparentChatbox = client.getVar(Varbits.TRANSPARENT_CHATBOX) == 1;
+		boolean isTransparentChatbox = client.getVarbitValue(Varbits.TRANSPARENT_CHATBOX) == 1;
 
 		//Calc starting positions for bars
 		int adjustedX = x -255;
@@ -236,7 +235,7 @@ class XPBarOverlay extends Overlay {
 		final int filledWidthXP = getBarWidth(nextLevelXP - currentLevelXP, currentXP - currentLevelXP, adjustedWidth);
 		final int filledWidthHP = getBarWidth(maxHP, currentHP, adjustedWidth);
 		final int filledWidthPray = getBarWidth(maxPray, currentPray, adjustedWidth);
-		final int quickPrayerState = client.getVar(Varbits.QUICK_PRAYER);
+		final int quickPrayerState = client.getVarbitValue(Varbits.QUICK_PRAYER);
 		final Color prayerBar = quickPrayerState == 1 ? QUICK_PRAYER_COLOR : PRAYER_COLOR;
 
 		//Format tooltip display
