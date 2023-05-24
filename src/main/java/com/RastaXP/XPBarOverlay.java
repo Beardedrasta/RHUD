@@ -9,7 +9,6 @@ import net.runelite.client.ui.overlay.Overlay;
 import net.runelite.client.ui.overlay.OverlayLayer;
 import net.runelite.client.ui.overlay.OverlayMenuEntry;
 import net.runelite.client.ui.overlay.OverlayPosition;
-import net.runelite.client.ui.overlay.components.LineComponent;
 import net.runelite.client.ui.overlay.components.PanelComponent;
 import net.runelite.client.ui.overlay.components.TextComponent;
 import net.runelite.client.util.ColorUtil;
@@ -64,9 +63,9 @@ public class XPBarOverlay extends Overlay {
     private final SkillIconManager skillIconManager;
     private final TextComponent textComponent = new TextComponent();
 
-    private TooltipManager tooltipManager;
+    private final TooltipManager tooltipManager;
 
-    private PanelComponent panelComponent = new PanelComponent();
+    private final PanelComponent panelComponent = new PanelComponent();
 
 
     @Inject
@@ -90,46 +89,52 @@ public class XPBarOverlay extends Overlay {
             if (plugin.getCurrentSkill() == null) {
                 name = config.skill().getName();
             } else name = plugin.getCurrentSkill().getName();
+            int xpNeeded = nextLevelXP - currentXP;
             NumberFormat f = NumberFormat.getNumberInstance(Locale.US);
             if (this.getBounds().contains(
                     client.getMouseCanvasPosition().getX(),
                     client.getMouseCanvasPosition().getY())) {
-                tooltipManager.add(new Tooltip(ColorUtil.wrapWithColorTag(name + " " + "Experience:", TITLE_COLOUR)));
-                tooltipManager.add(new Tooltip(ColorUtil.wrapWithColorTag(f.format(currentXP) + "/" + f.format(nextLevelXP), BODY_COLOUR)));
+                tooltipManager.add(new Tooltip(ColorUtil.wrapWithColorTag(name + " " + "XP:", TITLE_COLOUR)));
+                tooltipManager.add(new Tooltip(ColorUtil.wrapWithColorTag(f.format(xpNeeded), BODY_COLOUR)));
             }
             if (config.mostRecentSkill()) {
                 Skill skill;
-                if (plugin.getCurrentSkill() == null){
+                if (plugin.getCurrentSkill() == null) {
                     skill = config.skill();
-                }
-                else {
+                } else {
                     skill = plugin.getCurrentSkill();
                 }
                 final BufferedImage skillImage = ImageUtil.resizeImage(skillIconManager.getSkillImage(skill, true), IMAGE_SIZE, IMAGE_SIZE);
+                final int counterLevel = client.getBoostedSkillLevel(skill);
+                final String counterLevelText = Integer.toString(counterLevel);
                 renderBar(graphics, -1, 1, 10);
-                renderIcons(graphics, -25, + 0, skillImage, SKILL_LOCATION_X);
+                renderIcons(graphics, -25, +0, skillImage, SKILL_LOCATION_X);
+                renderCounters(graphics, -25, 0, counterLevelText, SKILL_LOCATION_X);
             }
             if (!config.mostRecentSkill()) {
                 Skill skill;
-                if (plugin.getCurrentSkill() == null){
+                if (plugin.getCurrentSkill() == null) {
                     skill = config.skill();
-                }
-                else {
+                } else {
                     skill = plugin.getCurrentSkill();
                 }
                 final BufferedImage skillImage = ImageUtil.resizeImage(skillIconManager.getSkillImage(skill, true), IMAGE_SIZE, IMAGE_SIZE);
+                final int counterLevel = client.getBoostedSkillLevel(skill);
+                final String counterLevelText = Integer.toString(counterLevel);
                 renderBarRecent(graphics, -1, 1, 10);
-                renderIcons(graphics, -25, + 0, skillImage, SKILL_LOCATION_X);
+                renderIcons(graphics, -25, +0, skillImage, SKILL_LOCATION_X);
+                renderCounters(graphics, -25, 0, counterLevelText, SKILL_LOCATION_X);
             }
         }
         if (config.displayHealthAndPrayer()) {
-                final BufferedImage healthImage = ImageUtil.resizeImage(skillIconManager.getSkillImage(Skill.HITPOINTS, true), IMAGE_SIZE, IMAGE_SIZE);
-                final BufferedImage prayerImage = ImageUtil.resizeImage(skillIconManager.getSkillImage(Skill.PRAYER, true), IMAGE_SIZE, IMAGE_SIZE);
+            final BufferedImage healthImage = ImageUtil.resizeImage(skillIconManager.getSkillImage(Skill.HITPOINTS, true), IMAGE_SIZE, IMAGE_SIZE);
+            final BufferedImage prayerImage = ImageUtil.resizeImage(skillIconManager.getSkillImage(Skill.PRAYER, true), IMAGE_SIZE, IMAGE_SIZE);
 
                 final int counterHealth = client.getBoostedSkillLevel(Skill.HITPOINTS);
                 final int counterPrayer = client.getBoostedSkillLevel(Skill.PRAYER);
                 final String counterHealthText = Integer.toString(counterHealth);
                 final String counterPrayerText = Integer.toString(counterPrayer);
+
 
                 renderIcons(graphics, -25, +18, prayerImage, PRAYER_LOCATION_X);
                 renderIcons(graphics, -25, +33, healthImage, HEALTH_LOCATION_X);
@@ -311,7 +316,7 @@ public class XPBarOverlay extends Overlay {
                 10 - BORDER_SIZE * 2);
 
         graphics.setColor(notchColor);
-        graphics.fillRect(adjustedX + 1 * (adjustedWidth / 10), adjustedY + 1, 2, 10 - BORDER_SIZE * 2);
+        graphics.fillRect(adjustedX + (adjustedWidth / 10), adjustedY + 1, 2, 10 - BORDER_SIZE * 2);
         graphics.fillRect(adjustedX + 2 * (adjustedWidth / 10), adjustedY + 1, 2, 10 - BORDER_SIZE * 2);
         graphics.fillRect(adjustedX + 3 * (adjustedWidth / 10), adjustedY + 1, 2, 10 - BORDER_SIZE * 2);
         graphics.fillRect(adjustedX + 4 * (adjustedWidth / 10), adjustedY + 1, 2, 10 - BORDER_SIZE * 2);
@@ -335,7 +340,7 @@ public class XPBarOverlay extends Overlay {
                 10 - BORDER_SIZE * 2);
 
         graphics.setColor(notchColor);
-        graphics.fillRect(adjustedX + 1 * (adjustedHeight / 10), adjustedY + 1, 2, 10 - BORDER_SIZE * 2);
+        graphics.fillRect(adjustedX + (adjustedHeight / 10), adjustedY + 1, 2, 10 - BORDER_SIZE * 2);
         graphics.fillRect(adjustedX + 2 * (adjustedHeight / 10), adjustedY + 1, 2, 10 - BORDER_SIZE * 2);
         graphics.fillRect(adjustedX + 3 * (adjustedHeight / 10), adjustedY + 1, 2, 10 - BORDER_SIZE * 2);
         graphics.fillRect(adjustedX + 4 * (adjustedHeight / 10), adjustedY + 1, 2, 10 - BORDER_SIZE * 2);
@@ -368,7 +373,7 @@ public class XPBarOverlay extends Overlay {
                 if (config.enableSmall()) {
                     textComponent.setPosition(new Point(10 + centerText + counterPadding, adjustedY + COUNTER_ICON_HEIGHT));
                 } else {
-                    textComponent.setPosition(new Point(+275 + centerText + counterPadding, adjustedY + COUNTER_ICON_HEIGHT));
+                    textComponent.setPosition(new Point(275 + centerText + counterPadding, adjustedY + COUNTER_ICON_HEIGHT));
                 }
             }
         }
