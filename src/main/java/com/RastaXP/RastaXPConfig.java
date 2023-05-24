@@ -1,5 +1,6 @@
 package com.RastaXP;
 
+import lombok.Getter;
 import net.runelite.api.Skill;
 import net.runelite.client.config.Alpha;
 import net.runelite.client.config.Config;
@@ -11,11 +12,28 @@ import java.awt.*;
 @ConfigGroup("RastaXP")
 public interface RastaXPConfig extends Config
 {
+	Color EXP_COLOR = new Color(130, 60, 170, 175);
 	@ConfigItem(
 			position = 0,
+			keyName = "XPtracker",
+			name = "Experience Bar",
+			description = "Displays the experience bar."
+	)
+	default boolean XPtracker() { return true; }
+
+	@ConfigItem(
+			position = 1,
+			keyName = "displayHealthAndPrayer",
+			name = "Status Bars",
+			description = "Displays Healh and Prayer."
+	)
+	default boolean displayHealthAndPrayer() { return false; }
+
+	@ConfigItem(
+			position = 2,
 			keyName = "skill",
 			name = "Active Skill",
-			description = "Choose which skill to show at XP bar."
+			description = "Choose which skill to track when Recent Skill setting is disabled."
 	)
 	default Skill skill()
 	{
@@ -23,25 +41,17 @@ public interface RastaXPConfig extends Config
 	}
 
 	@ConfigItem(
-			position = 1,
+			position = 3,
 			keyName = "mostRecentSkill",
-			name = "Show Recent Skill",
+			name = "Toggle Recent Skill",
 			description = "Display the most recent skill trained."
 	)
 	default boolean mostRecentSkill() { return false; }
 
 	@ConfigItem(
-			position = 2,
-			keyName = "displayHealthAndPrayer",
-			name = "Display Status Bars",
-			description = "Displays Healh and Prayer."
-	)
-	default boolean displayHealthAndPrayer() { return false; }
-
-	@ConfigItem(
-			position = 3,
+			position = 4,
 			keyName = "enableSkillIcon",
-			name = "Show Icons",
+			name = "Icons",
 			description = "Displays prayer and health icons."
 	)
 	default boolean enableSkillIcon()
@@ -49,9 +59,31 @@ public interface RastaXPConfig extends Config
 		return true;
 	}
 
+	@ConfigItem(
+			position = 5,
+			keyName = "enableSkillText",
+			name = "Text",
+			description = "Displays prayer and health status text."
+	)
+	default boolean enableSkillText()
+	{
+		return true;
+	}
+
+	@ConfigItem(
+			position = 6,
+			keyName = "enableSmall",
+			name = "Small Bars",
+			description = "Display bars at a reduced size."
+	)
+	default boolean enableSmall()
+	{
+		return false;
+	}
+
 	@Alpha
 	@ConfigItem(
-			position = 4,
+			position = 7,
 			keyName = "hpbarColor",
 			name = "Health Color",
 			description = "Configures the color of the Health bar"
@@ -63,19 +95,19 @@ public interface RastaXPConfig extends Config
 
 	@Alpha
 	@ConfigItem(
-			position = 5,
+			position = 8,
 			keyName = "xpbarColor",
 			name = "Experience Color",
 			description = "Configures the color of the Experience bar"
 	)
 	default Color colorXP()
 	{
-		return Color.MAGENTA;
+		return EXP_COLOR;
 	}
 
 	@Alpha
 	@ConfigItem(
-			position = 6,
+			position = 9,
 			keyName = "xpbarNotchColor",
 			name = "Segment Color",
 			description = "Configures the color of the experience segments."
@@ -84,5 +116,6 @@ public interface RastaXPConfig extends Config
 	{
 		return Color.LIGHT_GRAY;
 	}
+
 
 }
