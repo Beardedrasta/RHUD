@@ -258,7 +258,7 @@ public class XPBarOverlay extends Overlay {
             adjustedX = x;
             adjustedWidth = WIDTH + 7;
         }
-        adjustedY = client.isResized() && isTransparentChatbox ? y + 7 : y + 284;
+        adjustedY = client.isResized() && isTransparentChatbox ? y + 7: y;
 
         final int filledWidthHP = getBarWidth(maxHP, currentHP, adjustedWidth);
         final int filledHeightHP = getBarHeight(maxHP, currentHP, adjustedHeight);
