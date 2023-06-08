@@ -254,7 +254,6 @@ public class XPBarOverlay extends Overlay {
         currentLevel = Experience.getLevelForXp(currentXP);
         nextLevelXP = Experience.getXpForLevel(currentLevel + 1);
         int currentLevelXP = Experience.getXpForLevel(currentLevel);
-        boolean isTransparentChatbox = client.getVarbitValue(Varbits.TRANSPARENT_CHATBOX) == 1;
 
         //Calc starting position for bar
         int adjustedX = x;
@@ -266,7 +265,7 @@ public class XPBarOverlay extends Overlay {
             adjustedX = 0;
             adjustedWidth = WIDTH + 7;
         }
-        adjustedY = client.isResized() && isTransparentChatbox ? y + 7 : y;
+        adjustedY = y;
 
         final int filledWidth = getBarWidth(nextLevelXP - currentLevelXP, currentXP - currentLevelXP, adjustedWidth);
         final int filledHeight = getBarHeight(nextLevelXP - currentLevelXP, currentXP - currentLevelXP, adjustedHeight);
@@ -299,7 +298,6 @@ public class XPBarOverlay extends Overlay {
             currentLevel = Experience.getLevelForXp(currentXP);
             nextLevelXP = Experience.getXpForLevel(currentLevel + 1);
             int currentLevelXP = Experience.getXpForLevel(currentLevel);
-            boolean isTransparentChatbox = client.getVarbitValue(Varbits.TRANSPARENT_CHATBOX) == 1;
 
             //Calc starting position for bar
             int adjustedX = x;
@@ -311,7 +309,7 @@ public class XPBarOverlay extends Overlay {
                 adjustedX = x;
                 adjustedWidth = WIDTH + 7;
             }
-            adjustedY = client.isResized() && isTransparentChatbox ? y + 7 : y;
+            adjustedY = y;
 
             final int filledWidth = getBarWidth(nextLevelXP - currentLevelXP, currentXP - currentLevelXP, adjustedWidth);
             final int filledHeight = getBarHeight(nextLevelXP - currentLevelXP, currentXP - currentLevelXP, adjustedHeight);
@@ -342,7 +340,6 @@ public class XPBarOverlay extends Overlay {
         int currentPray = client.getBoostedSkillLevel(Skill.PRAYER);
         int maxPray = client.getRealSkillLevel(Skill.PRAYER);
 
-        boolean isTransparentChatbox = client.getVarbitValue(Varbits.TRANSPARENT_CHATBOX) == 1;
 
         //Calc starting positions for bars
         int adjustedX = x;
@@ -354,7 +351,7 @@ public class XPBarOverlay extends Overlay {
             adjustedX = x;
             adjustedWidth = WIDTH + 7;
         }
-        adjustedY = client.isResized() && isTransparentChatbox ? y + 7 : y;
+        adjustedY = y;
 
         final int filledWidthHP = getBarWidth(maxHP, currentHP, adjustedWidth);
         final int filledHeightHP = getBarHeight(maxHP, currentHP, adjustedHeight);
@@ -565,6 +562,7 @@ public class XPBarOverlay extends Overlay {
 
         if (config.enableSkillIcon()) {
             Widget bankContainer = client.getWidget(WidgetInfo.BANK_ITEM_CONTAINER);
+            client.getWidget(WidgetInfo.FIXED_VIEWPORT_INVENTORY_CONTAINER);
             if (bankContainer == null || bankContainer.isHidden()) {
                 graphics.drawImage(image, adjustedX + ICON_AND_COUNTER_OFFSET_X + PADDING, adjustedY + ICON_AND_COUNTER_OFFSET_Y - image.getWidth(null), null);
             }
