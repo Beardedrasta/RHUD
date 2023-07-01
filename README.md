@@ -3,7 +3,7 @@
 
 ## Table of Contents
 
-$$:boom:{\color{orange} If \space you \space want \space to \space use \space the \space XP \space Tracker \space your \space must \space enable \space it \space in \space the \space config \space options \space interface}:boom:$$
+$${\color{orange} If \space you \space want \space to \space use \space the \space XP \space Tracker \space your \space must \space enable \space it \space in \space the \space config \space options \space interface}$$
 
 <br>
 
