@@ -51,7 +51,6 @@ import net.runelite.client.game.SpriteManager;
 import net.runelite.client.plugins.itemstats.Effect;
 import net.runelite.client.plugins.itemstats.ItemStatChangesService;
 import net.runelite.client.plugins.itemstats.StatChange;
-import net.runelite.client.plugins.xptracker.XpActionType;
 import net.runelite.client.ui.overlay.OverlayLayer;
 import net.runelite.client.ui.overlay.OverlayPanel;
 import net.runelite.client.ui.overlay.OverlayPosition;
@@ -653,14 +652,13 @@ public class RHUD_Overlay extends OverlayPanel {
             }
 
             if (goalXp > currentXP) {
-                XpActionType xpActionType = xpTrackerService.getActionType(skill);
 
                 if (config.actionsNeeded()) {
                     int actionsLeft = xpTrackerService.getActionsLeft(skill);
                     if (actionsLeft != Integer.MAX_VALUE) {
                         String actionsLeftString = f.format(actionsLeft);
                         panelComponent.getChildren().add(LineComponent.builder()
-                                .left(xpActionType.getLabel() + " Needed:")
+                                .left("Actions Needed:")
                                 .leftColor(LEFT_TEXT)
                                 .right(actionsLeftString)
                                 .build());
