@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Jos <Malevolentdev@gmail.com>
+ * Copyright (c) 2023, Beardedrasta <Beardedrasta@gmail.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -22,17 +22,35 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 package RHUD.helpers;
 
-import javax.inject.Singleton;
+public class Layout {
 
-@Singleton
-public enum ModeSet
-{
-    DISABLED,
-    HITPOINTS,
-    PRAYER,
-    RUN_ENERGY,
-    SPECIAL_ATTACK,
+    public enum VIEW {
+        NORMAL,
+        GRID,
+        VERTICAL
+    }
+
+    public enum POINT {
+        RIGHT,
+        LEFT,
+        TOPLEFT,
+        TOPRIGHT,
+        BOTTOMLEFT,
+        BOTTOMRIGHT
+    }
+
+    public enum XPBARMODE{
+        DISABLED,
+        EXPERIENCE,
+    }
+
+    public enum BARMODE {
+        DISABLED,
+        HITPOINTS,
+        PRAYER,
+        RUN_ENERGY,
+        SPECIAL_ATTACK,
+    }
 }
