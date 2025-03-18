@@ -30,8 +30,6 @@ import java.util.function.Supplier;
 import RHUD.RHUD_Config;
 
 public class XpRender {
-    public static final int DEFAULT_WIDTH = 20;
-    public static final int DEFAULT_HEIGHT = 20;
     private static final int BORDER = 1;
 
     private final Supplier<Integer> maxValSupplier;
