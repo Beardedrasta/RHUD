@@ -26,47 +26,48 @@
 
 package RHUD;
 
-import com.google.inject.Provides;
-import RHUD.helpers.*;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import javax.inject.Inject;
+
 import lombok.Getter;
-import net.runelite.api.events.GameStateChanged;
-import net.runelite.api.events.StatChanged;
+import net.runelite.api.*;
+import net.runelite.api.events.*;
 import net.runelite.api.widgets.ComponentID;
 import net.runelite.api.widgets.Widget;
+import net.runelite.client.eventbus.Subscribe;
+import net.runelite.client.game.SkillIconManager;
+import net.runelite.client.game.SpriteManager;
+import net.runelite.client.plugins.itemstats.Effect;
+import net.runelite.client.plugins.itemstats.ItemStatChangesService;
+import net.runelite.client.plugins.itemstats.StatChange;
+import net.runelite.client.ui.overlay.*;
+
+import com.google.inject.Provides;
+import RHUD.helpers.*;
 
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.events.ConfigChanged;
 import net.runelite.client.game.AlternateSprites;
-import net.runelite.client.game.SkillIconManager;
-import net.runelite.client.game.SpriteManager;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDependency;
 import net.runelite.client.plugins.PluginDescriptor;
-import net.runelite.client.plugins.itemstats.Effect;
-import net.runelite.client.plugins.itemstats.ItemStatChangesService;
+import net.runelite.client.game.ItemManager;
+import net.runelite.client.game.ItemStats;
 import net.runelite.client.plugins.itemstats.ItemStatPlugin;
-import net.runelite.client.plugins.itemstats.StatChange;
 import net.runelite.client.plugins.xptracker.XpTrackerPlugin;
 import net.runelite.client.plugins.xptracker.XpTrackerService;
 
-import javax.inject.Inject;
-
-import java.util.EnumMap;
-import java.util.Map;
-import net.runelite.api.*;
-import net.runelite.client.eventbus.Subscribe;
-import net.runelite.client.ui.overlay.*;
+import java.util.*;
 import net.runelite.client.ui.overlay.components.LineComponent;
 import net.runelite.client.ui.overlay.components.TitleComponent;
 import net.runelite.client.util.ImageUtil;
 
-import java.awt.*;
 import java.awt.Point;
-import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.text.NumberFormat;
-import java.util.Locale;
+
 
 @PluginDescriptor(name = "RHUD", description = "Experience and Status bar hud for combat and skilling.", tags = { "exp",
 		"xp", "tracker", "status", "bar" })
@@ -88,6 +89,7 @@ public class RHUD_Plugin extends Plugin {
 	private ConfigManager configManager;
 	@Getter
 	public Skill currentSkill;
+
 
 	// ------------------ XP Tracking Maps ------------------
 	private final Map<Skill, Integer> previousXpMap = new EnumMap<>(Skill.class);
@@ -122,13 +124,6 @@ public class RHUD_Plugin extends Plugin {
 
 	}
 
-	@Subscribe
-	public void onGameStateChanged(GameStateChanged gameStateChanged) {
-		// Example message on login
-		if (gameStateChanged.getGameState() == GameState.LOGGED_IN) {
-			client.addChatMessage(ChatMessageType.GAMEMESSAGE, "", "RHUD plugin is active!", null);
-		}
-	}
 
 	@Subscribe
 	public void onStatChanged(StatChanged statChanged) {
@@ -196,6 +191,7 @@ public class RHUD_Plugin extends Plugin {
 }
 
 /////// HUD SETUP ///////
+
 class HUD extends OverlayPanel {
 	private Client client;
 	private RHUD_Plugin plugin;
@@ -226,8 +222,17 @@ class HUD extends OverlayPanel {
 	private static final Color SPECIAL_ACTIVE = new Color(4, 173, 1, 255);
 
 	private final Map<Layout.BARMODE, Render> barMode = new EnumMap<>(Layout.BARMODE.class);
-	private final Map<Layout.XPBARMODE, XpRender> xpBarMode = new EnumMap<Layout.XPBARMODE, XpRender>(
-			Layout.XPBARMODE.class);
+	private final Map<Layout.XPBARMODE, XpRender> xpBarMode = new EnumMap<Layout.XPBARMODE, XpRender>(Layout.XPBARMODE.class);
+
+	public void onGameStateChanged(GameStateChanged gameStateChanged) {
+		// Example message on loginw
+		if (gameStateChanged.getGameState() == GameState.LOGGED_IN) {
+			client.addChatMessage(ChatMessageType.GAMEMESSAGE, "", "RHUD plugin is active!", null);
+		}
+	}
+
+	@Inject
+	private ItemManager itemManager;
 
 	private final GradientPaint gradient = new GradientPaint(0, 0, new Color(139, 0, 98), 0, 90 + 5, Color.BLACK, true);
 
@@ -401,10 +406,12 @@ class HUD extends OverlayPanel {
 				() -> specialIcon));
 	}
 
+
 	@Override
 	public Dimension render(Graphics2D g) {
 		Dimension dimension = null;
 		Widget bankContainer = client.getWidget(ComponentID.BANK_ITEM_CONTAINER);
+
 
 		if (bankContainer == null || bankContainer.isHidden()) {
 			int width = config.barWidth(), adjX = config.barOffsetX();
@@ -419,19 +426,7 @@ class HUD extends OverlayPanel {
 			Render Bar4 = barMode.get(config.bar4BarMode());
 			Render Bar5 = barMode.get(config.bar5BarMode());
 
-			// if (config.XPTrackerEnable()) {
-			// if (config.mostRecentSkill()) {
-			// renderXPBar(g);
-			// }
-			// if (!config.mostRecentSkill()) {
-			// renderXPBarRecent(g);
-			// }
-			// }
 
-			// if (config.enableTip) {
-			// renderTrackerDisplay(g);
-			// renderTrackerIcons(config, g, width, height, new SkillIconManager());
-			// }
 			g.setColor(Color.BLACK);
 			if (config.showHeader() && config.layout() != Layout.VIEW.VERTICAL) {
 				if (Bar1 != null) {
@@ -843,12 +838,6 @@ class HUD extends OverlayPanel {
 							.build());
 					ACTIVE += 1;
 				}
-				// panelComponent.getChildren().add(LineComponent.builder()
-				// .left("XP/Hr:")
-				// .leftColor(LEFT_TEXT)
-				// .right(f.format((long) xpPerHour))
-				// .build());
-				// ACTIVE += 1;
 			}
 
 			if (config.showTTG()) {
@@ -915,14 +904,8 @@ class HUD extends OverlayPanel {
 			g.setColor(new Color(red, green, blue));
 
 			if (vertical) {
-				// For vertical bars, let's do a gradient from left to right
-				// i is offset in the X direction
-				// So we draw a vertical line from top to bottom
 				g.drawLine(x + i, y, x + i, y + config.barWidth() + 3);
 			} else {
-				// For horizontal bars, do the gradient from top to bottom
-				// i is offset in the Y direction
-				// So we draw a horizontal line across the bar
 				g.drawLine(x, y + i, x + config.barWidth() + 3, y + i);
 			}
 		}

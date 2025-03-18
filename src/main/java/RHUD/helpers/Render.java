@@ -30,8 +30,6 @@ import net.runelite.client.util.ColorUtil;
 import RHUD.RHUD_Config;
 
 public class Render {
-    public static final int DEFAULT_WIDTH = 20;
-    public static final int DEFAULT_HEIGHT = 20;
     private static final int BORDER = 1;
     private static final int MIN_ICON_AND_COUNTER_WIDTH = 16;
 
@@ -88,8 +86,6 @@ public class Render {
             g.fillRoundRect(x - 2, y, barWidth + 2, barHeight, config.arcSize(), config.arcSize());
 
             g.setColor(colorSupplier.get());
-
-            g.setColor(colorSupplier.get());
             g.fillRoundRect(
                     x + BORDER,
                     fillY + BORDER,
@@ -109,8 +105,6 @@ public class Render {
             g.fillRoundRect(x, y, barWidth / 2, barHeight, config.arcSize(), config.arcSize());
 
             g.setColor(colorSupplier.get());
-
-            g.setColor(colorSupplier.get());
             g.fillRoundRect(
                     x + BORDER,
                     y + BORDER,
@@ -128,8 +122,6 @@ public class Render {
             g.setColor(BACKGROUND);
             g.drawRoundRect(x, y, barWidth, barHeight, config.arcSize(), config.arcSize());
             g.fillRoundRect(x, y, barWidth, barHeight, config.arcSize(), config.arcSize());
-
-            g.setColor(colorSupplier.get());
 
             g.setColor(colorSupplier.get());
             g.fillRoundRect(
@@ -153,28 +145,6 @@ public class Render {
         {
             renderRestoreHorizontal(config, g, x, y, barWidth, barHeight);
         }
-
-        // render overlays like icons and text
-
-//        final int fillHeight = getBarHeight(maxVal, currVal, config.barWidth());
-//        final int filledWidth = getBarWidth(maxVal, currVal, config.barHeight());
-//        final Color fillColor = colorSupplier.get();
-//
-//        int adjX;
-//        int adjY;
-//        adjY = y;
-//        adjX = x;
-//
-//        g.setColor(BACKGROUND);
-//        g.drawRoundRect(adjX, adjY, config.barWidth() - BORDER, config.barHeight() - BORDER, config.arcSize(), config.arcSize());
-//        g.fillRoundRect(adjX, adjY, config.barWidth(), config.barHeight(), config.arcSize(), config.arcSize());
-//
-//        renderRestore(config, g, adjX, adjY, width);
-//
-//        g.setColor(fillColor);
-//        g.fillRoundRect(adjX + BORDER, adjY + BORDER, fillHeight - BORDER * 2, filledWidth - BORDER, config.arcSize(), config.arcSize());
-//
-//        renderIconsAndText(config, g, adjX, adjY, width);
     }
 
     private void renderRestoreVertical(RHUD_Config config, Graphics2D g, int x, int y, int barWidth, int barHeight)
@@ -182,14 +152,14 @@ public class Render {
         // bar is barWidth wide, barHeight tall
         int healVal = healSupplier.get();
         if (healVal <= 0) return;
+        int realHealVal = Math.min(healVal, maxVal - currVal);
 
         // The portion the bar is currently filled
         int currFill  = (int) Math.round((double) currVal / maxVal * barHeight);
         // The portion we would fill for “heal”
-        int healFill  = (int) Math.round((double) healVal / maxVal * barHeight);
+        int healFill = (int) Math.round((double) realHealVal / maxVal * barHeight);
 
-        // if (currVal + healVal > maxVal) => overheal logic if you want
-        // Example:
+
         if (currVal + healVal > maxVal)
         {
             g.setColor(OVERHEAL_COLOR);
@@ -199,10 +169,6 @@ public class Render {
             g.setColor(healColorSupplier.get());
         }
 
-        // Place the “heal” bar *above* the current fill
-        // So, if bar is filled from bottom up:
-        // the top of the heal fill is (barHeight - currFill - healFill)
-        // so fill a rectangle of height = healFill
         int top = y + (barHeight - currFill - healFill);
         g.fillRoundRect(x, top + 1, barWidth, healFill, config.arcSize(), config.arcSize());
     }
@@ -211,9 +177,10 @@ public class Render {
     {
         int healVal = healSupplier.get();
         if (healVal <= 0) return;
+        int realHealVal = Math.min(healVal, maxVal - currVal);
 
         int currFill = (int) Math.round((double) currVal / maxVal * barWidth);
-        int healFill = (int) Math.round((double) healVal / maxVal * barWidth);
+        int healFill = (int) Math.round((double) realHealVal / maxVal * barWidth);
 
         if (currVal + healVal > maxVal)
         {
@@ -233,9 +200,10 @@ public class Render {
     {
         int healVal = healSupplier.get();
         if (healVal <= 0) return;
+        int realHealVal = Math.min(healVal, maxVal - currVal);
 
         int currFill = (int) Math.round((double) currVal / maxVal * barWidth/2);
-        int healFill = (int) Math.round((double) healVal / maxVal * barWidth/2);
+        int healFill = (int) Math.round((double) realHealVal / maxVal * barWidth/2);
 
         if (currVal + healVal > maxVal)
         {
