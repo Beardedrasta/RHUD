@@ -534,4 +534,13 @@ public interface RHUD_Config extends Config {
 	{
 		return true;
 	}
+
+	@ConfigItem(
+		position = 36,
+		keyName = "hideInterfaces",
+		name = "Hide Behind Interfaces",
+		description = "Hides the bars while the bank interface is open.",
+		section = statusSection
+	)
+	default boolean hideInInterfaces() { return false; }
 }

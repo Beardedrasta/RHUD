@@ -34,6 +34,7 @@ import lombok.Getter;
 import net.runelite.api.*;
 import net.runelite.api.events.*;
 import net.runelite.api.widgets.ComponentID;
+import net.runelite.api.widgets.InterfaceID;
 import net.runelite.api.widgets.Widget;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.game.SkillIconManager;
@@ -409,11 +410,13 @@ class HUD extends OverlayPanel {
 
 	@Override
 	public Dimension render(Graphics2D g) {
+		if (config.hideInInterfaces() && isBlockingInterfaceOpen()) {
+			return null;
+		}
 		Dimension dimension = null;
-		Widget bankContainer = client.getWidget(ComponentID.BANK_ITEM_CONTAINER);
+		final boolean hide = config.hideInInterfaces() && isBlockingInterfaceOpen();
 
-
-		if (bankContainer == null || bankContainer.isHidden()) {
+		if (!hide) {
 			int width = config.barWidth(), adjX = config.barOffsetX();
 			int adjY = config.barOffsetY();
 			int totalHeight = 0;
@@ -934,6 +937,21 @@ class HUD extends OverlayPanel {
 
 	private boolean inLms() {
 		return client.getWidget(ComponentID.LMS_INGAME_INFO) != null;
+	}
+	private static final int[] BLOCKING_GROUPS = {
+			InterfaceID.BANK,
+			InterfaceID.DEPOSIT_BOX,
+			InterfaceID.GRAND_EXCHANGE,
+	};
+
+	private boolean isBlockingInterfaceOpen() {
+		for (final int group : BLOCKING_GROUPS) {
+			final Widget root = client.getWidget(group, 0);
+			if (root != null && !root.isHidden()) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private int getRestoreValue(String skill) {
