@@ -62,17 +62,28 @@ public class Render {
 
 
     public void renderBar(RHUD_Config config, Graphics2D g, int x, int y) {
+        renderBar(config, g, x, y, config.barHeight(), config.enableSkillIcon(), RHUD_Config.BarTextFormat.CURRENT_MAX, config.showBarBackground(), 100, null);
+    }
+
+    public void renderBar(RHUD_Config config, Graphics2D g, int x, int y, int customHeight, boolean showIcon, RHUD_Config.BarTextFormat textFormat, boolean showBackground, int opacityPercent, Color customColor) {
+        renderBar(config, g, x, y, customHeight, showIcon, textFormat, showBackground, opacityPercent, customColor, false, Color.RED);
+    }
+
+    public void renderBar(RHUD_Config config, Graphics2D g, int x, int y, int customHeight, boolean showIcon, RHUD_Config.BarTextFormat textFormat, boolean showBackground, int opacityPercent, Color customColor, boolean warningActive, Color warningColor) {
 
         refresh();
+        Composite oldComposite = g.getComposite();
+        float alpha = Math.max(0.10f, Math.min(1.0f, opacityPercent / 100f));
+        g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));
 
         int barWidth, barHeight;
         if (config.layout() == Layout.VIEW.VERTICAL) {
             // Swap so bar is “skinny width, tall height”
-            barWidth = config.barHeight();
+            barWidth = customHeight;
             barHeight = config.barWidth();
         } else {
             barWidth = config.barWidth();
-            barHeight = config.barHeight();
+            barHeight = customHeight;
         }
 
         if (config.layout() == Layout.VIEW.VERTICAL) {
@@ -81,11 +92,13 @@ public class Render {
             // or a direct formula: (int) ((double)currVal / maxVal * barHeight)
             int fillY = y + barHeight - fillHeight;
 
-            g.setColor(BACKGROUND);
-            g.drawRoundRect(x - 2, y, barWidth + 2, barHeight, config.arcSize(), config.arcSize());
-            g.fillRoundRect(x - 2, y, barWidth + 2, barHeight, config.arcSize(), config.arcSize());
+            if (showBackground) {
+                g.setColor(BACKGROUND);
+                g.drawRoundRect(x - 2, y, barWidth + 2, barHeight, config.arcSize(), config.arcSize());
+                g.fillRoundRect(x - 2, y, barWidth + 2, barHeight, config.arcSize(), config.arcSize());
+            }
 
-            g.setColor(colorSupplier.get());
+            g.setColor(customColor != null ? customColor : colorSupplier.get());
             g.fillRoundRect(
                     x + BORDER,
                     fillY + BORDER,
@@ -94,17 +107,19 @@ public class Render {
                     config.arcSize(),
                     config.arcSize()
             );
-            renderIconsAndText(config, g, x, y, barWidth, barHeight);
+            renderIconsAndText(config, g, x, y, barWidth, barHeight, showIcon, textFormat);
         } else if (config.layout() == Layout.VIEW.GRID) {
             // horizontal fill
             int fillWidth = getBarWidth(currVal, maxVal, barWidth);
             // or a direct formula: (int) ((double)currVal / maxVal * barWidth)
 
-            g.setColor(BACKGROUND);
-            g.drawRoundRect(x, y, barWidth / 2, barHeight, config.arcSize(), config.arcSize());
-            g.fillRoundRect(x, y, barWidth / 2, barHeight, config.arcSize(), config.arcSize());
+            if (showBackground) {
+                g.setColor(BACKGROUND);
+                g.drawRoundRect(x, y, barWidth / 2, barHeight, config.arcSize(), config.arcSize());
+                g.fillRoundRect(x, y, barWidth / 2, barHeight, config.arcSize(), config.arcSize());
+            }
 
-            g.setColor(colorSupplier.get());
+            g.setColor(customColor != null ? customColor : colorSupplier.get());
             g.fillRoundRect(
                     x + BORDER,
                     y + BORDER,
@@ -113,17 +128,19 @@ public class Render {
                     config.arcSize(),
                     config.arcSize()
             );
-            renderIconsAndText(config, g, x, y, barWidth, barHeight);
+            renderIconsAndText(config, g, x, y, barWidth, barHeight, showIcon, textFormat);
         } else {
             // horizontal fill
             int fillWidth = getBarWidth(currVal, maxVal, barWidth);
             // or a direct formula: (int) ((double)currVal / maxVal * barWidth)
 
-            g.setColor(BACKGROUND);
-            g.drawRoundRect(x, y, barWidth, barHeight, config.arcSize(), config.arcSize());
-            g.fillRoundRect(x, y, barWidth, barHeight, config.arcSize(), config.arcSize());
+            if (showBackground) {
+                g.setColor(BACKGROUND);
+                g.drawRoundRect(x, y, barWidth, barHeight, config.arcSize(), config.arcSize());
+                g.fillRoundRect(x, y, barWidth, barHeight, config.arcSize(), config.arcSize());
+            }
 
-            g.setColor(colorSupplier.get());
+            g.setColor(customColor != null ? customColor : colorSupplier.get());
             g.fillRoundRect(
                     x + BORDER,
                     y + BORDER,
@@ -132,7 +149,7 @@ public class Render {
                     config.arcSize(),
                     config.arcSize()
             );
-            renderIconsAndText(config, g, x, y, barWidth, barHeight);
+            renderIconsAndText(config, g, x, y, barWidth, barHeight, showIcon, textFormat);
 
         }
 
@@ -145,6 +162,39 @@ public class Render {
         {
             renderRestoreHorizontal(config, g, x, y, barWidth, barHeight);
         }
+        if (warningActive) {
+            int warningWidth = config.layout() == Layout.VIEW.GRID ? barWidth / 2 : barWidth;
+            drawWarningGlow(config, g, x, y, warningWidth, barHeight, warningColor);
+        }
+        g.setComposite(oldComposite);
+    }
+
+    private void drawWarningGlow(RHUD_Config config, Graphics2D g, int x, int y, int barWidth, int barHeight, Color warningColor)
+    {
+        Composite oldComposite = g.getComposite();
+        Stroke oldStroke = g.getStroke();
+
+        float pulse = 1.0f;
+        if (config.warningPulse()) {
+            double phase = (System.currentTimeMillis() % 1000L) / 1000.0 * Math.PI * 2.0;
+            pulse = 0.45f + (float)((Math.sin(phase) + 1.0) * 0.275);
+        }
+
+        int glow = Math.max(1, config.warningGlowSize());
+        g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, pulse));
+        g.setColor(warningColor);
+        g.setStroke(new BasicStroke(glow, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+        g.drawRoundRect(x - glow, y - glow, barWidth + glow * 2, barHeight + glow * 2,
+                config.arcSize() + glow, config.arcSize() + glow);
+
+        // Softer outer edge makes the warning read as a glow rather than a border.
+        g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, pulse * 0.35f));
+        g.setStroke(new BasicStroke(glow + 3f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+        g.drawRoundRect(x - glow - 1, y - glow - 1, barWidth + glow * 2 + 2, barHeight + glow * 2 + 2,
+                config.arcSize() + glow + 2, config.arcSize() + glow + 2);
+
+        g.setStroke(oldStroke);
+        g.setComposite(oldComposite);
     }
 
     private void renderRestoreVertical(RHUD_Config config, Graphics2D g, int x, int y, int barWidth, int barHeight)
@@ -219,7 +269,7 @@ public class Render {
         g.fillRoundRect(left - 1, y, healFill, barHeight, config.arcSize(), config.arcSize());
     }
 
-    private void renderIconsAndText(RHUD_Config config, Graphics2D g, int x, int y, int drawnWidth, int drawnHeight) {
+    private void renderIconsAndText(RHUD_Config config, Graphics2D g, int x, int y, int drawnWidth, int drawnHeight, boolean showIcon, RHUD_Config.BarTextFormat textFormat) {
         // Icons and counters overlap the bar at small widths, so they are not drawn when the bars are too small
         if (drawnWidth < MIN_ICON_AND_COUNTER_WIDTH) {
             return;
@@ -238,8 +288,15 @@ public class Render {
         int iconY = centerIconY - (iconHeight / 2);
         int singleIconY = singleCenterIconY - (iconHeight / 2);
 
-        final String counterText = currVal + "/" + maxVal;
-        final String singleCounterText = String.valueOf(currVal);
+        final String counterText;
+        switch (textFormat) {
+            case CURRENT: counterText = String.valueOf(currVal); break;
+            case PERCENT: counterText = maxVal <= 0 ? "0%" : Math.round((currVal * 100f) / maxVal) + "%"; break;
+            case HIDDEN: counterText = ""; break;
+            case CURRENT_MAX:
+            default: counterText = currVal + "/" + maxVal; break;
+        }
+        final String singleCounterText = counterText;
         FontMetrics metrics = g.getFontMetrics();
         final int textWidth = metrics.stringWidth(counterText);
         final int textHeight = metrics.getHeight();
@@ -254,37 +311,39 @@ public class Render {
         int textY = centerY + (metrics.getAscent() / 2);
         int singleTextY = singleCenterY + (metrics.getAscent() / 2);
 
-        if (config.enableSkillIcon()) {
+        {
             if (config.layout() == Layout.VIEW.VERTICAL && config.barWidth() > textWidth) {
-                g.drawImage(icon, iconX, singleIconY + 3, null);
+                if (showIcon) g.drawImage(icon, iconX, singleIconY + 3, null);
             } else if (config.layout() == Layout.VIEW.GRID && config.barHeight() > textHeight) {
-                g.drawImage(icon, x + 5, iconY, null);
+                if (showIcon) g.drawImage(icon, x + 5, iconY, null);
             } else {
                 if (config.barHeight() > textHeight) {
-                    g.drawImage(icon, x + 5, iconY, null);
+                    if (showIcon) g.drawImage(icon, x + 5, iconY, null);
                 }
             }
 
-            if (config.layout() == Layout.VIEW.VERTICAL) {
-                if (config.barWidth() > textWidth) {
-                    g.setColor(Color.BLACK);
-                    g.drawString(singleCounterText, singleTextX + 1, singleTextY + 1);
-                    g.setColor(ColorUtil.colorWithAlpha(Color.WHITE, 255));
-                    g.drawString(singleCounterText, singleTextX, singleTextY);
-                }
-            } else if (config.layout() == Layout.VIEW.GRID) {
-                if (config.barHeight() > textHeight) {
-                    g.setColor(Color.BLACK);
-                    g.drawString(counterText, textX + 1 - ((config.barWidth() / 2) / 2), textY + 1);
-                    g.setColor(ColorUtil.colorWithAlpha(Color.WHITE, 255));
-                    g.drawString(counterText, textX - ((config.barWidth() / 2) / 2), textY);
-                }
-            } else {
-                if (config.barHeight() > textHeight) {
-                    g.setColor(Color.BLACK);
-                    g.drawString(counterText, textX + 1, textY + 1);
-                    g.setColor(ColorUtil.colorWithAlpha(Color.WHITE, 255));
-                    g.drawString(counterText, textX, textY);
+            if (textFormat != RHUD_Config.BarTextFormat.HIDDEN) {
+                if (config.layout() == Layout.VIEW.VERTICAL) {
+                    if (config.barWidth() > textWidth) {
+                        g.setColor(Color.BLACK);
+                        g.drawString(singleCounterText, singleTextX + 1, singleTextY + 1);
+                        g.setColor(ColorUtil.colorWithAlpha(Color.WHITE, 255));
+                        g.drawString(singleCounterText, singleTextX, singleTextY);
+                    }
+                } else if (config.layout() == Layout.VIEW.GRID) {
+                    if (config.barHeight() > textHeight) {
+                        g.setColor(Color.BLACK);
+                        g.drawString(counterText, textX + 1 - ((config.barWidth() / 2) / 2), textY + 1);
+                        g.setColor(ColorUtil.colorWithAlpha(Color.WHITE, 255));
+                        g.drawString(counterText, textX - ((config.barWidth() / 2) / 2), textY);
+                    }
+                } else {
+                    if (config.barHeight() > textHeight) {
+                        g.setColor(Color.BLACK);
+                        g.drawString(counterText, textX + 1, textY + 1);
+                        g.setColor(ColorUtil.colorWithAlpha(Color.WHITE, 255));
+                        g.drawString(counterText, textX, textY);
+                    }
                 }
             }
         }

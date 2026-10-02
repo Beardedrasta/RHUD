@@ -60,38 +60,76 @@ public class XpRender {
 
 
     public void renderBar(RHUD_Config config, Graphics2D g, int x, int y, int width) {
-
-        refresh();
-
-        final int fillHeight = getBarHeight(maxVal, currVal, width);
-        final int filledWidth = getBarWidth(maxVal, currVal, config.xpBarHeight());
-        final Color fillColor = colorSupplier.get();
-
-        int adjX;
-        int adjY;
-        adjY = y;
-        adjX = x;
-
-        g.setColor(BACKGROUND);
-        g.drawRoundRect(adjX, adjY - 2, width - BORDER, config.xpBarHeight() - BORDER, config.arcSize(), config.arcSize());
-        g.fillRoundRect(adjX, adjY - 2, width, config.xpBarHeight(), config.arcSize(), config.arcSize());
-
-        renderRestore(config, g, adjX, adjY, width);
-
-        g.setColor(fillColor);
-        g.fillRoundRect(adjX + BORDER, adjY + BORDER - 2, fillHeight - BORDER * 2, filledWidth - BORDER, config.arcSize(), config.arcSize());
-
-        float spacing = width / 10f;
-        int notchCount = 9;
-        for (int i = 1; i <= notchCount; i++) {
-            int notchX = adjX + Math.round(i * spacing);
-            int notchHeight = config.xpBarHeight();
-            g.setColor(Color.BLACK);
-            g.fillRect(notchX, adjY + 1 - 2, 1, notchHeight - 1);
-        }
+        renderBar(config, g, x, y, width, config.xpBarHeight(), config.showBarBackground(), 100, null);
     }
 
-    private void renderRestore(RHUD_Config config, Graphics2D g, int x, int y, int width) {
+    public void renderBar(RHUD_Config config, Graphics2D g, int x, int y, int width, int customHeight, boolean showBackground, int opacityPercent, Color customColor) {
+
+        refresh();
+        Composite oldComposite = g.getComposite();
+        float alpha = Math.max(0.10f, Math.min(1.0f, opacityPercent / 100f));
+        g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));
+
+        final Color fillColor = customColor != null ? customColor : colorSupplier.get();
+        final double ratio = maxVal <= 0 ? 0.0 : Math.max(0.0, Math.min(1.0, (double) currVal / maxVal));
+
+        if (config.layout() == Layout.VIEW.VERTICAL) {
+            final int barWidth = customHeight;
+            final int barHeight = width;
+            final int innerHeight = Math.max(0, barHeight - BORDER * 2);
+            final int fillHeight = (int) Math.round(innerHeight * ratio);
+            final int fillY = y + BORDER + (innerHeight - fillHeight);
+
+            if (showBackground) {
+                g.setColor(BACKGROUND);
+                g.drawRoundRect(x - 2, y, barWidth + 2, barHeight, config.arcSize(), config.arcSize());
+                g.fillRoundRect(x - 2, y, barWidth + 2, barHeight, config.arcSize(), config.arcSize());
+            }
+
+            g.setColor(fillColor);
+            if (fillHeight > 0) {
+                g.fillRoundRect(x + BORDER, fillY, Math.max(1, barWidth - BORDER * 2), fillHeight,
+                        config.arcSize(), config.arcSize());
+            }
+
+            // Ten XP segments, rotated for the vertical layout.
+            float spacing = barHeight / 10f;
+            for (int i = 1; i <= 9; i++) {
+                int notchY = y + Math.round(i * spacing);
+                g.setColor(Color.BLACK);
+                g.fillRect(x + 1, notchY, Math.max(1, barWidth - 1), 1);
+            }
+        } else {
+            final int fillWidth = (int) Math.round(width * ratio);
+
+            if (showBackground) {
+                g.setColor(BACKGROUND);
+                g.drawRoundRect(x, y - 2, width - BORDER, customHeight - BORDER, config.arcSize(), config.arcSize());
+                g.fillRoundRect(x, y - 2, width, customHeight, config.arcSize(), config.arcSize());
+            }
+
+            renderRestore(config, g, x, y, width, customHeight);
+
+            g.setColor(fillColor);
+            if (fillWidth > 0) {
+                g.fillRoundRect(x + BORDER, y + BORDER - 2,
+                        Math.max(1, fillWidth - BORDER * 2),
+                        Math.max(1, customHeight - BORDER),
+                        config.arcSize(), config.arcSize());
+            }
+
+            float spacing = width / 10f;
+            for (int i = 1; i <= 9; i++) {
+                int notchX = x + Math.round(i * spacing);
+                g.setColor(Color.BLACK);
+                g.fillRect(notchX, y - 1, 1, Math.max(1, customHeight - 1));
+            }
+        }
+
+        g.setComposite(oldComposite);
+    }
+
+    private void renderRestore(RHUD_Config config, Graphics2D g, int x, int y, int width, int customHeight) {
         final Color color = healColorSupplier.get();
         final int heal = healSupplier.get();
 
@@ -112,7 +150,7 @@ public class XpRender {
             fillX = x - BORDER + (filledCurrentWidth - filledHealWidth) + filledHealWidth;
             fillWidth = filledHealWidth;
         }
-        g.fillRoundRect(fillX - 2, y + BORDER, fillWidth + 2, config.xpBarHeight() - BORDER, config.arcSize(), config.arcSize());
+        g.fillRoundRect(fillX - 2, y + BORDER, fillWidth + 2, customHeight - BORDER, config.arcSize(), config.arcSize());
     }
 
 
